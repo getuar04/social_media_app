@@ -28,18 +28,20 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="nav">
           <ul className="navbar-nav me-auto">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/">
-                Home
-              </NavLink>
-            </li>
-
             {user && (
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/profile">
-                  Profile
-                </NavLink>
-              </li>
+              <>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/profile">
+                    Profile
+                  </NavLink>
+                </li>
+
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/home">
+                    Home
+                  </NavLink>
+                </li>
+              </>
             )}
           </ul>
 
@@ -49,7 +51,10 @@ export default function Navbar() {
                 <span className="navbar-text text-white-50 me-2">
                   {user.first_name} {user.last_name}
                 </span>
-                <button className="btn btn-outline-light" onClick={handleLogout}>
+                <button
+                  className="btn btn-outline-light"
+                  onClick={handleLogout}
+                >
                   Logout
                 </button>
               </>

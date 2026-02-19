@@ -9,7 +9,11 @@ export const AuthProvider = ({ children }) => {
 
   const loadMe = async () => {
     try {
-      const u = await Auth.me();
+      const res = await Auth.me();
+
+      // disa backends kthejnë { user: {...} }, disa kthejnë direkt {...}
+      const u = res?.user ?? res;
+
       setUser(u);
     } catch (err) {
       setUser(null);
@@ -28,7 +32,7 @@ export const AuthProvider = ({ children }) => {
   const doLogin = async (email, password) => {
     const res = await Auth.login({ email, password });
     localStorage.setItem("token", res.token);
-    setUser(res.user);
+    await loadMe(); // gjithmonë user nga /me
     return res;
   };
 
@@ -43,7 +47,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, loading, doLogin, doRegister, doLogout, loadMe }}
+      value={{ user, loading, doLogin, doRegister, doLogout, loadMe }}
     >
       {children}
     </AuthContext.Provider>

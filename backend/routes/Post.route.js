@@ -1,6 +1,8 @@
 import { Router } from "express";
 import PostModel from "../models/Post.model.js";
 import { AuthMiddleware } from "../middleware/Auth.middleware.js";
+import mongoose from "mongoose";
+import PostLikeModel from "../models/PostLike.model.js";
 
 export const PostRouter = Router();
 
@@ -84,6 +86,54 @@ PostRouter.delete("/:id", AuthMiddleware, async (req, res) => {
     return res.json({ message: "Post deleted" });
   } catch (err) {
     console.error("DELETE POST ERROR:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Toggle like/unlike
+PostRouter.post("/:id/like", AuthMiddleware, async (req, res) => {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.id;
+
+    if (!mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ message: "Invalid post id" });
+    }
+
+    const post = await PostModel.findOne({ _id: postId, isActive: true });
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
+    const existing = await PostLikeModel.findOne({ postId, userId });
+
+    if (existing) {
+      await PostLikeModel.deleteOne({ _id: existing._id });
+      const updated = await PostModel.findByIdAndUpdate(
+        postId,
+        { $inc: { likesCount: -1 } },
+        { new: true },
+      );
+
+      return res.json({
+        postId,
+        liked: false,
+        likesCount: updated.likesCount,
+      });
+    } else {
+      await PostLikeModel.create({ postId, userId });
+      const updated = await PostModel.findByIdAndUpdate(
+        postId,
+        { $inc: { likesCount: 1 } },
+        { new: true },
+      );
+
+      return res.json({
+        postId,
+        liked: true,
+        likesCount: updated.likesCount,
+      });
+    }
+  } catch (err) {
+    console.error("LIKE TOGGLE ERROR:", err);
     return res.status(500).json({ message: "Server error" });
   }
 });

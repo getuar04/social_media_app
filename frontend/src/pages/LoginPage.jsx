@@ -27,7 +27,6 @@ export default function LoginPage() {
         <div className="card shadow-sm">
           <div className="card-body p-4">
             <h3 className="mb-3">Login</h3>
-
             {err && <div className="alert alert-danger">{err}</div>}
 
             <form onSubmit={onSubmit} className="d-grid gap-3">
@@ -37,7 +36,6 @@ export default function LoginPage() {
                   className="form-control"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
                 />
               </div>
 
@@ -48,14 +46,13 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
                 />
               </div>
 
               <button className="btn btn-dark">Login</button>
 
               <div className="text-muted small">
-                S’ke account? <Link to="/register">Register</Link>
+                you dont have account <Link to="/register">Register</Link>
               </div>
             </form>
           </div>

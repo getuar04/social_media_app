@@ -106,7 +106,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="text-muted small">
-                Ke account? <Link to="/login">Login</Link>
+                you have acount <Link to="/login">Login</Link>
               </div>
             </form>
           </div>

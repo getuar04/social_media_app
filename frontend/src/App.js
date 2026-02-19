@@ -1,29 +1,40 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
-import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
+
+// auth
 import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
+
+// private
 import ProfilePage from "./pages/ProfilePage";
+import HomePage from "./pages/HomePage";
 
 export default function App() {
-  return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
+  const { user, loading } = useAuth();
 
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </Layout>
+  if (loading) return <div className="container py-4">Loading...</div>;
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Navigate to={user ? "/profile" : "/login"} replace />}
+      />
+
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/home" element={<HomePage />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
