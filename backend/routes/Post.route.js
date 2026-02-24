@@ -3,37 +3,46 @@ import PostModel from "../models/Post.model.js";
 import { AuthMiddleware } from "../middleware/Auth.middleware.js";
 import mongoose from "mongoose";
 import PostLikeModel from "../models/PostLike.model.js";
+import { upload } from "../middleware/Multer.middleware.js";
 
 export const PostRouter = Router();
 
 // Create post (requires login)
-PostRouter.post("/", AuthMiddleware, async (req, res) => {
+PostRouter.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { content, media } = req.body;
+    const { caption } = req.body;
+    const userId = req.user._id;
 
-    if (!content) {
+    if (!req.file) {
       return res.status(400).json({ message: "content is required" });
     }
 
-    const post = await PostModel.create({
-      userId: req.user.id,
-      content,
-      media: media || "",
+    const post = await PostModel({
+      caption,
+      imageUrl,
+      user: userId,
     });
 
-    return res.status(201).json(post);
-  } catch (err) {
-    console.error("CREATE POST ERROR:", err);
-    return res.status(500).json({ message: "Server error" });
+    await newPost.save();
+    res.status(201).json(newPost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 // Get all active posts
 PostRouter.get("/", async (req, res) => {
+  // Pagination: /posts?limit=10&page=1
   try {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const skip = (page - 1) * limit;
     const posts = await PostModel.find({ isActive: true })
       .sort({ createdAt: -1 })
-      .populate("userId", "username name surname");
+      .populate("userId", "username name surname")
+      .skip(skip)
+      .limit(limit);
 
     return res.json(posts);
   } catch (err) {

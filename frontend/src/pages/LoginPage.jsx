@@ -15,7 +15,7 @@ export default function LoginPage() {
     setErr("");
     try {
       await doLogin(email, password);
-      navigate("/profile");
+      navigate("/home");
     } catch (error) {
       setErr(error?.response?.data?.message || "Login failed");
     }

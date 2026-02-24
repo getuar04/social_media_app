@@ -42,6 +42,7 @@ app.get("/", (req, res) => {
 app.use("/auth", RegisterRouter); // POST /auth
 app.use("/auth", LoginRouter); // POST /auth/login, GET /auth/me
 app.use("/posts", PostRouter); // posts CRUD
+app.use("/uploads", express.static("uploads"));
 
 app.listen(PORT, () => {
   console.log(`🫡  Server running on http://localhost:${PORT}`);
