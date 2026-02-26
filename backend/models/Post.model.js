@@ -2,8 +2,10 @@ import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema(
   {
-    caption: {
-      type: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
     content: {
@@ -11,11 +13,10 @@ const postSchema = new mongoose.Schema(
       required: true,
       maxlength: 1000,
     },
-    imageUrl: { type: String, required: true },
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+
+    imageUrl: {
+      type: String,
+      default: "",
     },
 
     likesCount: {
@@ -28,9 +29,7 @@ const postSchema = new mongoose.Schema(
       default: true,
     },
   },
-  {
-    timestamps: true,
-  },
+  { timestamps: true },
 );
 
 export default mongoose.model("Post", postSchema);

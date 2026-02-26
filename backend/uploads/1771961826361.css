@@ -1,0 +1,355 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Poppins", Sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  padding: 10px 0;
+  flex-direction: column;
+}
+
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-item {
+  list-style: none;
+}
+.nav-link {
+  text-decoration: none;
+  color: black;
+  padding: 0 10px 5px 10px;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.nav-link:hover {
+  color: #fc644d;
+  border-bottom: 2px solid #fc644d;
+}
+
+.logo {
+  width: 120px;
+  height: 120px;
+}
+
+.apply-button {
+  background-color: #fc644d;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 15px 20px;
+}
+
+.register-section {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  height: 900px;
+  background-image: url("https://roikids.net/wp-content/uploads/2023/07/school-children-classroom-lesson-scaled.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: white;
+  z-index: 1;
+}
+
+.register-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+}
+
+.text-container {
+  text-align: left;
+  margin-bottom: 20px;
+  width: 500px;
+  padding: 30px;
+}
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 400px;
+  padding: 30px 50px;
+  background-color: #0060bf75;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.register-description {
+  font-size: 17px;
+  font-weight: 400;
+  color: rgb(239, 239, 239);
+  margin-bottom: 20px;
+}
+
+.register-button {
+  padding: 20px;
+  border-radius: 2px;
+  background-color: white;
+  color: rgb(0, 96, 191);
+  font-size: 16px;
+  border: none;
+  font-weight: 600;
+}
+
+.register-button:hover {
+  background-color: rgb(0, 96, 191);
+  color: white;
+  cursor: pointer;
+}
+
+.apply-title {
+  text-align: center;
+  color: white;
+  font-size: 28px;
+  font-weight: 500;
+}
+
+.form-input {
+  padding: 8px 16px;
+}
+.select-input {
+  padding: 5px 20px 5px 20px;
+  font-size: 16px;
+}
+.submit-button {
+  background-color: white;
+  color: #fc644d;
+  border: none;
+  border-radius: 2px;
+  padding: 5px 24px;
+  font-size: 16px;
+  font-weight: 500;
+}
+.submit-button:hover {
+  background-color: #fc644d;
+  color: white;
+  cursor: pointer;
+}
+
+.register-title {
+  font-size: 44px;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  border-bottom: 2px solid rgb(213, 213, 213);
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.info-article {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 10px;
+  align-items: center;
+  text-align: center;
+}
+
+.icon-wrapper {
+  font-size: 40px;
+  border-radius: 50%;
+  background-color: #fc644d;
+  color: white;
+  padding: 10px;
+}
+.users {
+  background-color: #fc644d;
+}
+.house-laptop {
+  background-color: #00cca4;
+}
+.clock {
+  background-color: #0060bf;
+}
+
+.orange-text {
+  color: #fc644d;
+  margin-bottom: 10px;
+}
+.green-text {
+  color: #00cca4;
+  margin-bottom: 10px;
+}
+.blue-text {
+  color: #0060bf;
+  margin-bottom: 10px;
+}
+
+.details-wrapper {
+  padding: 10px;
+}
+
+.details-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+
+.program-details {
+  background: linear-gradient(to right, #e9f2f9, #e4eff7);
+  border-radius: 15px;
+  padding: 25px;
+  width: 400px;
+  height: 140px;
+}
+.internship-details {
+  background: linear-gradient(to right, #f3ecd7, #efc5b9);
+  border-radius: 15px;
+  padding: 25px;
+  width: 400px;
+  height: 140px;
+  text-align: center;
+}
+.detail-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.detail-description {
+  color: #737373;
+  font-size: 16px;
+}
+
+.about-us {
+  margin: 100px 20%;
+  text-align: left;
+}
+
+.about-us > p {
+  font-size: 22px;
+  color: rgb(30, 36, 50);
+  line-height: 33px;
+}
+
+.about-us > h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 32px;
+}
+
+.our-team {
+  padding: 50px 0;
+  background-color: rgb(0, 96, 191);
+  color: white;
+}
+
+/* sm devices */
+/*  mobile first */
+.our-team-container {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  /* grid-template-rows: repeat(2, 1fr); */
+  margin: 0 20%;
+  border: 1px solid red;
+}
+
+.team-member-image {
+  width: 370px;
+  height: 310px;
+  border-radius: 11px;
+  margin-bottom: 20px;
+}
+
+.team-member {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 370px;
+}
+
+.member-name {
+  font-size: 23px;
+  margin-bottom: 20px;
+}
+.our-team-title {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 31px;
+}
+
+.member-title {
+  font-style: italic;
+  font-weight: 300;
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+.member-desription {
+  font-weight: 400;
+  font-size: 15px;
+}
+@media (min-width: 577px) {
+  .our-team-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .our-team-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .navbar {
+    flex-direction: row;
+  }
+  .register-section {
+    flex-direction: row;
+    height: 650px;
+  }
+  .info-section {
+    flex-direction: row;
+  }
+  .info-article {
+    flex-direction: row;
+  }
+  .details-section {
+    flex-direction: row;
+  }
+  .program-details {
+    width: 500px;
+  }
+  .internship-details {
+    width: 500px;
+  }
+  .our-team-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .team-member-image {
+    width: 237px;
+    height: 197px;
+  }
+
+  .team-member {
+    width: 237px;
+  }
+}

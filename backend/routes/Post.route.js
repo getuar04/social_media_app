@@ -1,91 +1,162 @@
 import { Router } from "express";
-import PostModel from "../models/Post.model.js";
-import { AuthMiddleware } from "../middleware/Auth.middleware.js";
 import mongoose from "mongoose";
+import PostModel from "../models/Post.model.js";
 import PostLikeModel from "../models/PostLike.model.js";
 import { upload } from "../middleware/Multer.middleware.js";
+import { AuthMiddleware } from "../middleware/Auth.middleware.js";
+import { verifyToken } from "../util/token.js";
 
-export const PostRouter = Router();
+const PostRouter = Router();
 
-// Create post (requires login)
-PostRouter.post("/", upload.single("image"), async (req, res) => {
+/* ============================
+   GET POSTS WITH PAGINATION
+   GET /api/posts?limit=10&page=1
+============================ */
+
+// Get posts (public) + pagination + likedByMe if token exists
+PostRouter.get("/", async (req, res) => {
   try {
-    const { caption } = req.body;
-    const userId = req.user._id;
+    const limit = Math.min(Math.max(parseInt(req.query.limit) || 10, 1), 50);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const skip = (page - 1) * limit;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "content is required" });
+    const filter = { isActive: true };
+
+    // optional filter: /posts?userId=<id>
+    if (req.query.userId && mongoose.Types.ObjectId.isValid(req.query.userId)) {
+      filter.user = req.query.userId;
     }
 
-    const post = await PostModel({
-      caption,
-      imageUrl,
-      user: userId,
+    // optional auth (only for likedByMe)
+    let viewerUserId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      const parts = authHeader.split(" ");
+      if (parts.length === 2 && parts[0] === "Bearer") {
+        try {
+          const decoded = verifyToken(parts[1]);
+          if (decoded?.id && mongoose.Types.ObjectId.isValid(decoded.id)) {
+            viewerUserId = decoded.id;
+          }
+        } catch {
+          // ignore
+        }
+      }
+    }
+
+    const [posts, total] = await Promise.all([
+      PostModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("user", "username name surname"),
+      PostModel.countDocuments(filter),
+    ]);
+
+    // likedByMe for current page
+    let likedSet = new Set();
+    if (viewerUserId && posts.length > 0) {
+      const postIds = posts.map((p) => p._id);
+      const likes = await PostLikeModel.find({
+        userId: viewerUserId,
+        postId: { $in: postIds },
+      }).select("postId");
+      likedSet = new Set(likes.map((l) => String(l.postId)));
+    }
+
+    const shaped = posts.map((p) => {
+      const obj = p.toObject();
+      obj.likedByMe = likedSet.has(String(p._id));
+      return obj;
     });
 
-    await newPost.save();
-    res.status(201).json(newPost);
+    return res.json({
+      data: shaped,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// Get all active posts
-PostRouter.get("/", async (req, res) => {
-  // Pagination: /posts?limit=10&page=1
-  try {
-    const limit = parseInt(req.query.limit) || 10;
-    const page = parseInt(req.query.page) || 1;
-    const skip = (page - 1) * limit;
-    const posts = await PostModel.find({ isActive: true })
-      .sort({ createdAt: -1 })
-      .populate("userId", "username name surname")
-      .skip(skip)
-      .limit(limit);
-
-    return res.json(posts);
-  } catch (err) {
-    console.error("GET POSTS ERROR:", err);
+    console.log("GET POSTS ERROR:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-// Update post (only owner)
+/* ============================
+   CREATE POST WITH MULTER
+============================ */
+
+PostRouter.post(
+  "/",
+  AuthMiddleware,
+  upload.single("image"),
+  async (req, res) => {
+    try {
+      const { content } = req.body;
+
+      if (!content) {
+        return res.status(400).json({ message: "Content is required" });
+      }
+
+      const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+
+      const post = await PostModel.create({
+        user: req.user.id,
+        content,
+        imageUrl,
+      });
+
+      const populated = await post.populate("user", "username name surname");
+      const obj = populated.toObject();
+      obj.likedByMe = false;
+      res.status(201).json(obj);
+    } catch (error) {
+      console.log("CREATE POST ERROR:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  },
+);
+
+// Update post (owner only)
 PostRouter.patch("/:id", AuthMiddleware, async (req, res) => {
   try {
-    const { content, media } = req.body;
-
-    if (!content && media === undefined) {
-      return res.status(400).json({ message: "Nothing to update" });
+    const { content } = req.body || {};
+    if (!content || !String(content).trim()) {
+      return res.status(400).json({ message: "Content is required" });
     }
 
     const post = await PostModel.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post || !post.isActive) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
-    if (String(post.userId) !== String(req.user.id)) {
+    if (String(post.user) !== String(req.user.id)) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
-    if (content) post.content = content;
-    if (media !== undefined) post.media = media;
-
+    post.content = String(content).trim();
     await post.save();
 
-    return res.json({ message: "Post updated successfully", post });
-  } catch (err) {
-    console.error("UPDATE POST ERROR:", err);
+    const populated = await post.populate("user", "username name surname");
+    return res.json({ message: "Post updated successfully", post: populated });
+  } catch (error) {
+    console.log("UPDATE POST ERROR:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
 
-// Soft delete (only owner)
+// Soft delete (owner only)
 PostRouter.delete("/:id", AuthMiddleware, async (req, res) => {
   try {
     const post = await PostModel.findById(req.params.id);
-    if (!post) return res.status(404).json({ message: "Post not found" });
+    if (!post || !post.isActive) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
-    if (String(post.userId) !== String(req.user.id)) {
+    if (String(post.user) !== String(req.user.id)) {
       return res.status(403).json({ message: "Not allowed" });
     }
 
@@ -93,8 +164,8 @@ PostRouter.delete("/:id", AuthMiddleware, async (req, res) => {
     await post.save();
 
     return res.json({ message: "Post deleted" });
-  } catch (err) {
-    console.error("DELETE POST ERROR:", err);
+  } catch (error) {
+    console.log("DELETE POST ERROR:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
@@ -125,24 +196,26 @@ PostRouter.post("/:id/like", AuthMiddleware, async (req, res) => {
       return res.json({
         postId,
         liked: false,
-        likesCount: updated.likesCount,
-      });
-    } else {
-      await PostLikeModel.create({ postId, userId });
-      const updated = await PostModel.findByIdAndUpdate(
-        postId,
-        { $inc: { likesCount: 1 } },
-        { new: true },
-      );
-
-      return res.json({
-        postId,
-        liked: true,
-        likesCount: updated.likesCount,
+        likesCount: updated?.likesCount ?? 0,
       });
     }
-  } catch (err) {
-    console.error("LIKE TOGGLE ERROR:", err);
+
+    await PostLikeModel.create({ postId, userId });
+    const updated = await PostModel.findByIdAndUpdate(
+      postId,
+      { $inc: { likesCount: 1 } },
+      { new: true },
+    );
+
+    return res.json({
+      postId,
+      liked: true,
+      likesCount: updated?.likesCount ?? 0,
+    });
+  } catch (error) {
+    console.log("LIKE TOGGLE ERROR:", error);
     return res.status(500).json({ message: "Server error" });
   }
 });
+
+export default PostRouter;

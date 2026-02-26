@@ -1,31 +1,44 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import * as Post from "../services/post.services";
+import Pagination from "../components/pagination";
+
+const BACKEND_URL = process.env.REACT_APP_API_URL;  // ndrroje nese ke tjeter
 
 export default function ProfilePage() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [posts, setPosts] = useState([]);
+  const [pagination, setPagination] = useState({ totalPages: 1 });
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [err, setErr] = useState("");
 
-  // LIKE
+  // Pagination from URL: /profile?page=3&limit=5
+  const page = Math.max(parseInt(searchParams.get("page") || "1", 10) || 1, 1);
+  const limit = Math.min(
+    Math.max(parseInt(searchParams.get("limit") || "5", 10) || 5, 1),
+    50,
+  );
+
+  // Like
   const [likingId, setLikingId] = useState(null);
 
-  // ADD
+  // Add post
   const [newContent, setNewContent] = useState("");
-  const [newMedia, setNewMedia] = useState("");
+  const [newFile, setNewFile] = useState(null);
   const [adding, setAdding] = useState(false);
 
-  // EDIT
+  // Edit
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState("");
-  const [editMedia, setEditMedia] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
-  // DELETE
+  // Delete
   const [deletingId, setDeletingId] = useState(null);
 
+  // User normalize
   const userId = user?._id ?? user?.id;
   const firstName = user?.first_name ?? user?.name ?? "";
   const lastName = user?.last_name ?? user?.surname ?? "";
@@ -34,50 +47,49 @@ export default function ProfilePage() {
   const loadPosts = async () => {
     setLoadingPosts(true);
     setErr("");
+
     try {
-      const data = await Post.getPosts();
-      setPosts(Array.isArray(data) ? data : []);
+      const res = await Post.getPosts(page, limit, userId || ""); // { data, pagination }
+      setPosts(Array.isArray(res?.data) ? res.data : []);
+      setPagination(res?.pagination || { totalPages: 1, page, limit });
     } catch (e) {
-      setErr(e?.response?.data?.message || "Failed to load posts");
+      setErr(e?.response?.data?.message || "Server error");
       setPosts([]);
+      setPagination({ totalPages: 1, page, limit });
     } finally {
       setLoadingPosts(false);
     }
   };
 
   useEffect(() => {
+    if (!userId) return;
     loadPosts();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, limit, userId]);
 
-  const myPosts = useMemo(() => {
-    if (!userId) return [];
+  const myPosts = useMemo(() => posts, [posts]);
 
-    return posts.filter((p) => {
-      const postOwnerId =
-        typeof p.userId === "object"
-          ? (p.userId?._id ?? p.userId?.id)
-          : p.userId;
-
-      return String(postOwnerId) === String(userId);
-    });
-  }, [posts, userId]);
-
-  // -------- ADD --------
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!newContent.trim()) return;
 
     setAdding(true);
     setErr("");
+
     try {
       const created = await Post.addPost({
         content: newContent.trim(),
-        media: newMedia.trim(),
+        imageFile: newFile,
       });
 
+
       setPosts((prev) => [created, ...prev]);
+
       setNewContent("");
-      setNewMedia("");
+      setNewFile(null);
+
+      const input = document.getElementById("postImageInput");
+      if (input) input.value = "";
     } catch (e2) {
       setErr(e2?.response?.data?.message || "Failed to add post");
     } finally {
@@ -85,17 +97,15 @@ export default function ProfilePage() {
     }
   };
 
-  // -------- EDIT --------
+  // Edit post
   const startEdit = (p) => {
     setEditingId(p._id);
     setEditContent(p.content ?? "");
-    setEditMedia(p.media ?? "");
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditContent("");
-    setEditMedia("");
   };
 
   const handleUpdate = async (id) => {
@@ -103,11 +113,9 @@ export default function ProfilePage() {
 
     setSavingEdit(true);
     setErr("");
+
     try {
-      const updated = await Post.updatePost(id, {
-        content: editContent.trim(),
-        media: editMedia.trim(),
-      });
+      const updated = await Post.updatePost(id, { content: editContent.trim() });
 
       setPosts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, ...updated } : p)),
@@ -121,13 +129,14 @@ export default function ProfilePage() {
     }
   };
 
-  // -------- DELETE --------
+  // Delete post
   const handleDelete = async (id) => {
     const ok = window.confirm("A je i sigurt qe don me fshi postimin?");
     if (!ok) return;
 
     setDeletingId(id);
     setErr("");
+
     try {
       await Post.deletePost(id);
       setPosts((prev) => prev.filter((p) => p._id !== id));
@@ -138,14 +147,13 @@ export default function ProfilePage() {
     }
   };
 
-  // -------- LIKE (toggle) --------
+  // Like / Unlike
   const handleLike = async (postId) => {
-    try {
-      setErr("");
-      setLikingId(postId);
+    setErr("");
+    setLikingId(postId);
 
-      // duhet te ekzistoje Post.toggleLike ne services
-      const res = await Post.toggleLike(postId); // { liked, likesCount }
+    try {
+      const res = await Post.toggleLike(postId); 
 
       setPosts((prev) =>
         prev.map((p) =>
@@ -161,9 +169,13 @@ export default function ProfilePage() {
     }
   };
 
+  const onPage = (p) => {
+    setSearchParams({ page: String(p), limit: String(limit) });
+  };
+
   return (
     <div className="row g-4">
-      {/* LEFT: PROFILE + CREATE */}
+      {/* LEFT */}
       <div className="col-12 col-lg-4">
         <div className="card shadow-sm">
           <div className="card-body">
@@ -192,12 +204,15 @@ export default function ProfilePage() {
                   onChange={(e) => setNewContent(e.target.value)}
                   maxLength={1000}
                 />
+
                 <input
+                  id="postImageInput"
                   className="form-control"
-                  placeholder="Media URL (optional)"
-                  value={newMedia}
-                  onChange={(e) => setNewMedia(e.target.value)}
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setNewFile(e.target.files?.[0] || null)}
                 />
+
                 <button
                   className="btn btn-primary"
                   disabled={adding || !newContent.trim()}
@@ -210,10 +225,11 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* RIGHT: MY POSTS */}
+      {/* RIGHT */}
       <div className="col-12 col-lg-8">
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h4 className="mb-0">My Posts</h4>
+
           <button
             className="btn btn-outline-secondary btn-sm"
             onClick={loadPosts}
@@ -234,124 +250,139 @@ export default function ProfilePage() {
         ) : myPosts.length === 0 ? (
           <div className="alert alert-secondary">No posts yet.</div>
         ) : (
-          <div className="d-grid gap-3">
-            {myPosts.map((p) => {
-              const isEditing = editingId === p._id;
+          <>
+            <div className="d-grid gap-3">
+              {myPosts.map((p) => {
+                const isEditing = editingId === p._id;
 
-              const authorName =
-                typeof p.userId === "object"
-                  ? `${p.userId?.first_name ?? p.userId?.name ?? ""} ${
-                      p.userId?.last_name ?? p.userId?.surname ?? ""
-                    }`.trim() || `${firstName} ${lastName}`.trim()
-                  : `${firstName} ${lastName}`.trim();
+                const owner = p.user ?? p.userId;
+                const authorName =
+                  typeof owner === "object"
+                    ? (
+                        `${owner?.first_name ?? owner?.name ?? ""} ${
+                          owner?.last_name ?? owner?.surname ?? ""
+                        }`.trim() || `${firstName} ${lastName}`.trim()
+                      )
+                    : `${firstName} ${lastName}`.trim();
 
-              return (
-                <div key={p._id} className="card shadow-sm">
-                  <div className="card-body">
-                    <div className="d-flex justify-content-between align-items-start gap-2">
-                      <div>
-                        <div className="text-muted small mb-1">
-                          {p.createdAt
-                            ? new Date(p.createdAt).toLocaleString()
-                            : ""}
+                const imageSrc = p.imageUrl ? `${BACKEND_URL}${p.imageUrl}` : "";
+
+                return (
+                  <div key={p._id} className="card shadow-sm">
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-start gap-2">
+                        <div>
+                          <div className="text-muted small mb-1">
+                            {p.createdAt
+                              ? new Date(p.createdAt).toLocaleString()
+                              : ""}
+                          </div>
+                          <div className="fw-semibold">{authorName}</div>
                         </div>
-                        <div className="fw-semibold">{authorName}</div>
+
+                        <div className="d-flex gap-2 align-items-start">
+                          <button
+                            className={`btn btn-sm ${
+                              p.likedByMe
+                                ? "btn-primary"
+                                : "btn-outline-primary"
+                            }`}
+                            onClick={() => handleLike(p._id)}
+                            disabled={likingId === p._id}
+                          >
+                            {likingId === p._id
+                              ? "..."
+                              : `${p.likedByMe ? "Liked" : "Like"} • ${
+                                  p.likesCount ?? 0
+                                }`}
+                          </button>
+
+                          {!isEditing ? (
+                            <>
+                              <button
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() => startEdit(p)}
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() => handleDelete(p._id)}
+                                disabled={deletingId === p._id}
+                              >
+                                {deletingId === p._id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
                       </div>
 
-                      {/* Right side actions */}
-                      <div className="d-flex gap-2 align-items-start">
-                        <button
-                          className={`btn btn-sm ${
-                            p.likedByMe ? "btn-primary" : "btn-outline-primary"
-                          }`}
-                          onClick={() => handleLike(p._id)}
-                          disabled={likingId === p._id}
-                        >
-                          {likingId === p._id
-                            ? "..."
-                            : `${p.likedByMe ? "Liked" : "Like"} • ${
-                                p.likesCount ?? 0
-                              }`}
-                        </button>
+                      {!isEditing ? (
+                        <>
+                          <div className="mt-2">{p.content}</div>
 
-                        {!isEditing ? (
-                          <>
+                          {p.imageUrl ? (
+                            <div className="mt-2">
+                              <img
+                                src={imageSrc}
+                                alt="post"
+                                className="img-fluid rounded"
+                                style={{
+                                  maxHeight: "400px",
+                                  objectFit: "cover",
+                                }}
+                                onError={(e) =>
+                                  (e.currentTarget.style.display = "none")
+                                }
+                              />
+                            </div>
+                          ) : null}
+                        </>
+                      ) : (
+                        <>
+                          <textarea
+                            className="form-control mt-3"
+                            rows={3}
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            maxLength={1000}
+                          />
+
+                          <div className="d-flex gap-2 mt-3">
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => handleUpdate(p._id)}
+                              disabled={savingEdit || !editContent.trim()}
+                            >
+                              {savingEdit ? "Saving..." : "Save"}
+                            </button>
+
                             <button
                               className="btn btn-outline-secondary btn-sm"
-                              onClick={() => startEdit(p)}
+                              onClick={cancelEdit}
+                              disabled={savingEdit}
                             >
-                              Edit
+                              Cancel
                             </button>
-                            <button
-                              className="btn btn-outline-danger btn-sm"
-                              onClick={() => handleDelete(p._id)}
-                              disabled={deletingId === p._id}
-                            >
-                              {deletingId === p._id ? "Deleting..." : "Delete"}
-                            </button>
-                          </>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    {!isEditing ? (
-                      <>
-                        <div className="mt-2">{p.content}</div>
-
-                        {p.media ? (
-                          <div className="mt-2">
-                            <img
-                              src={p.media}
-                              alt="post"
-                              className="img-fluid rounded"
-                              style={{ maxHeight: "400px", objectFit: "cover" }}
-                              onError={(e) =>
-                                (e.currentTarget.style.display = "none")
-                              }
-                            />
                           </div>
-                        ) : null}
-                      </>
-                    ) : (
-                      <>
-                        <textarea
-                          className="form-control mt-3"
-                          rows={3}
-                          value={editContent}
-                          onChange={(e) => setEditContent(e.target.value)}
-                          maxLength={1000}
-                        />
-
-                        <input
-                          className="form-control mt-2"
-                          value={editMedia}
-                          onChange={(e) => setEditMedia(e.target.value)}
-                          placeholder="Media URL (optional)"
-                        />
-
-                        <div className="d-flex gap-2 mt-3">
-                          <button
-                            className="btn btn-success btn-sm"
-                            onClick={() => handleUpdate(p._id)}
-                            disabled={savingEdit || !editContent.trim()}
-                          >
-                            {savingEdit ? "Saving..." : "Save"}
-                          </button>
-                          <button
-                            className="btn btn-outline-secondary btn-sm"
-                            onClick={cancelEdit}
-                            disabled={savingEdit}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {/* numeric pagination in bottom + URL */}
+            <Pagination
+              page={pagination?.page || page}
+              totalPages={pagination?.totalPages || 1}
+              onPage={onPage}
+            />
+          </>
         )}
       </div>
     </div>

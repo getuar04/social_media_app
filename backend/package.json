@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "seed": "node scripts/seed.js",
     "start": "nodemon index.js"
   },
   "keywords": [],
@@ -15,6 +16,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "imagekit": "^6.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^7.1.0",
     "mongoose": "^9.1.6",
