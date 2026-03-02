@@ -1,174 +1,133 @@
-📱 Social Media Application
-📌 Overview
+# 📱 Social Media Application
 
-This is a full-stack Social Media Application developed during the Full Stack Development training at ROI Academy.
+## 📌 Overview
 
-The application allows users to register, log in, create posts (with text and images), like posts, and manage their own content. The project follows a RESTful architecture with a clear separation between frontend and backend.
+This is a full-stack Social Media Application developed during the **Full Stack Development Training at ROI Academy**.
 
-🛠 Tech Stack
-🔹 Frontend
+The application allows users to register, log in, create posts (text and image), like posts, and manage their own content.  
+It follows a RESTful architecture with a clear separation between frontend and backend.
 
-React (Functional Components)
+---
+
+## 🛠 Tech Stack
+
+### 🔹 Frontend
+- React (Functional Components)
+- React Hooks (useState, useEffect)
+- Context API (Authentication state)
+- Axios (API communication)
+- Pagination Component
+- Conditional Rendering
 
-React Hooks (useState, useEffect)
+### 🔹 Backend
+- Node.js
+- Express.js
+- MongoDB
+- Mongoose
+- JWT Authentication (Access Token)
+- Multer (Image Upload Handling)
+- ImageKit (Cloud Image Storage)
 
-Context API (Authentication state management)
+---
 
-Axios (API communication)
+## 🗄 Database Structure
 
-Pagination Component
+The application uses **MongoDB** with the following collections:
 
-Conditional Rendering
+- **Users**
+- **Posts**
+- **PostLikes**
 
-🔹 Backend
+### Relationships
 
-Node.js
+- One User → Many Posts
+- One Post → One User
+- One Post → Many Likes
+- Each user can like a post only once (unique logic implemented)
 
-Express.js
+---
 
-MongoDB
+## 🔐 Authentication & Security
 
-Mongoose
+- JWT-based authentication
+- Access token returned on login
+- Token stored in localStorage
+- Protected routes via middleware
+- Only post owner can edit or delete posts
+- Soft delete using `isActive` flag
 
-JWT Authentication (Access Token)
+---
 
-Multer (Image upload handling)
+## 🚀 Main Features
 
-ImageKit (Cloud image storage)
+- User registration & login
+- JWT authentication
+- Create post (text + image)
+- Image upload with Multer
+- Cloud image storage via ImageKit
+- Like / Unlike system
+- Real-time like counter
+- Pagination in feed
+- Edit post (owner only)
+- Soft delete post (owner only)
+- User profile page
 
-🗄 Database Structure
+---
 
-The application uses MongoDB with the following main collections:
+## 📡 Main API Endpoints
 
-Users
+### Auth Routes
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
 
-Posts
+### Post Routes
+- `GET /posts` (supports pagination)
+- `POST /posts`
+- `PATCH /posts/:id`
+- `DELETE /posts/:id`
+- `POST /posts/:id/like`
 
-PostLikes
+---
 
-Relationships:
+## 📂 Project Structure
 
-A User can create multiple Posts.
+### Backend
+```
+backend/
+ ├── controllers/
+ ├── models/
+ ├── routes/
+ ├── middleware/
+ └── config/
+```
 
-A Post belongs to one User.
+### Frontend
+```
+frontend/
+ ├── pages/
+ ├── components/
+ ├── context/
+ └── services/
+```
 
-A Post can have multiple Likes.
+---
 
-Each user can like a post only once (unique constraint logic).
+## 🎯 Purpose of the Project
 
-🔐 Authentication & Security
+This project demonstrates:
 
-JWT-based authentication
+- Full Stack architecture understanding
+- REST API development
+- JWT authentication
+- Database modeling with MongoDB
+- Frontend-backend integration
+- State management in React
+- File upload and cloud storage integration
 
-Access token returned on login
+---
 
-Token stored in localStorage
+## 🧑‍💻 Author
 
-Protected routes using middleware
-
-Only post owner can edit or delete their posts
-
-Soft delete implementation (isActive flag)
-
-🚀 Main Features
-
-User registration and login
-
-JWT authentication
-
-Create post (text + image)
-
-Image upload with Multer
-
-Cloud image storage via ImageKit
-
-Like / Unlike system
-
-Real-time like counter
-
-Pagination in feed
-
-Edit post (owner only)
-
-Soft delete post (owner only)
-
-User profile page with personal posts
-
-📂 Project Structure
-Backend Structure
-
-controllers
-
-models
-
-routes
-
-middleware
-
-config
-
-Frontend Structure
-
-pages
-
-components
-
-context
-
-services
-
-📡 API Endpoints (Main)
-Auth
-
-POST /auth/register
-
-POST /auth/login
-
-GET /auth/me
-
-Posts
-
-GET /posts (with pagination)
-
-POST /posts
-
-PATCH /posts/:id
-
-DELETE /posts/:id
-
-POST /posts/:id/like
-
-⚙️ Key Implementation Details
-
-Posts are filtered by isActive = true
-
-Soft delete prevents permanent data loss
-
-Like system ensures one like per user per post
-
-Pagination improves performance
-
-Middleware verifies JWT before protected actions
-
-🎯 Purpose of the Project
-
-The goal of this project was to demonstrate:
-
-Full Stack architecture understanding
-
-REST API development
-
-Authentication & authorization
-
-Database modeling
-
-Frontend-backend integration
-
-State management in React
-
-File upload and cloud storage integration
-
-🧑‍💻 Author
-
-Getuar Jakupi
+**Getuar Jakupi**  
 Full Stack Development – ROI Academy
