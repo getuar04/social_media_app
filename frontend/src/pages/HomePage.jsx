@@ -4,9 +4,8 @@ import * as Post from "../services/post.services";
 import Pagination from "../components/pagination";
 import { useAuth } from "../context/AuthContext";
 
-
-const BACKEND_URL = process.env.REACT_APP_API_URL; 
-console.log('🛃 BACKEND_URL:', BACKEND_URL);
+const BACKEND_URL = process.env.REACT_APP_API_URL;
+console.log("🛃 BACKEND_URL:", BACKEND_URL);
 
 export default function HomePage() {
   const { user } = useAuth();
@@ -30,7 +29,7 @@ export default function HomePage() {
     setLoading(true);
     setErr("");
     try {
-      const res = await Post.getPosts(page, limit); 
+      const res = await Post.getPosts(page, limit);
       setPosts(Array.isArray(res?.data) ? res.data : []);
       setPagination(res?.pagination || null);
     } catch (e) {
@@ -51,12 +50,12 @@ export default function HomePage() {
   };
 
   const handleLike = async (postId) => {
-    if (!user) return; 
+    if (!user) return;
     setLikingId(postId);
     setErr("");
 
     try {
-      const res = await Post.toggleLike(postId); 
+      const res = await Post.toggleLike(postId);
       setPosts((prev) =>
         prev.map((p) =>
           p._id === postId
@@ -96,7 +95,11 @@ export default function HomePage() {
                   ? `${owner?.first_name ?? owner?.name ?? ""} ${owner?.last_name ?? owner?.surname ?? ""}`.trim()
                   : "User";
 
-              const imageSrc = p.imageUrl ? `${BACKEND_URL}${p.imageUrl}` : "";
+              const imageSrc = p.imageUrl
+                ? p.imageUrl.startsWith("http")
+                  ? p.imageUrl
+                  : `${BACKEND_URL}${p.imageUrl}`
+                : null;
 
               return (
                 <div key={p._id} className="card shadow-sm">
@@ -134,9 +137,10 @@ export default function HomePage() {
                           alt="post"
                           className="img-fluid rounded"
                           style={{ maxHeight: "420px", objectFit: "cover" }}
-                          onError={(e) =>
-                            (e.currentTarget.style.display = "none")
-                          }
+                          onError={(e) => {
+                            console.log("Image load error:", imageSrc, e);
+                            e.currentTarget.style.display = "none";
+                          }}
                         />
                       </div>
                     ) : null}

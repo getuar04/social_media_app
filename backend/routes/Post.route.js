@@ -5,13 +5,9 @@ import PostLikeModel from "../models/PostLike.model.js";
 import { upload } from "../middleware/Multer.middleware.js";
 import { AuthMiddleware } from "../middleware/Auth.middleware.js";
 import { verifyToken } from "../util/token.js";
+import { imagekit } from "../util/imagekit.js";
 
 const PostRouter = Router();
-
-/* ============================
-   GET POSTS WITH PAGINATION
-   GET /api/posts?limit=10&page=1
-============================ */
 
 // Get posts (public) + pagination + likedByMe if token exists
 PostRouter.get("/", async (req, res) => {
@@ -22,12 +18,10 @@ PostRouter.get("/", async (req, res) => {
 
     const filter = { isActive: true };
 
-    // optional filter: /posts?userId=<id>
     if (req.query.userId && mongoose.Types.ObjectId.isValid(req.query.userId)) {
       filter.user = req.query.userId;
     }
 
-    // optional auth (only for likedByMe)
     let viewerUserId = null;
     const authHeader = req.headers.authorization;
     if (authHeader) {
@@ -38,9 +32,7 @@ PostRouter.get("/", async (req, res) => {
           if (decoded?.id && mongoose.Types.ObjectId.isValid(decoded.id)) {
             viewerUserId = decoded.id;
           }
-        } catch {
-          // ignore
-        }
+        } catch {}
       }
     }
 
@@ -101,7 +93,13 @@ PostRouter.post(
         return res.status(400).json({ message: "Content is required" });
       }
 
-      const imageUrl = req.file ? `/uploads/${req.file.filename}` : "";
+      const result = await imagekit.upload({
+        file: req.file.buffer,
+        fileName: `${Date.now()}_${req.file.originalname}`,
+        folder: "posts",
+      });
+
+      const imageUrl = result?.url;
 
       const post = await PostModel.create({
         user: req.user.id,

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import * as Post from "../services/post.services";
 import Pagination from "../components/pagination";
 
-const BACKEND_URL = process.env.REACT_APP_API_URL;  // ndrroje nese ke tjeter
+const BACKEND_URL = process.env.REACT_APP_API_URL; // ndrroje nese ke tjeter
 
 export default function ProfilePage() {
   const { user } = useAuth();
@@ -82,7 +82,6 @@ export default function ProfilePage() {
         imageFile: newFile,
       });
 
-
       setPosts((prev) => [created, ...prev]);
 
       setNewContent("");
@@ -115,7 +114,9 @@ export default function ProfilePage() {
     setErr("");
 
     try {
-      const updated = await Post.updatePost(id, { content: editContent.trim() });
+      const updated = await Post.updatePost(id, {
+        content: editContent.trim(),
+      });
 
       setPosts((prev) =>
         prev.map((p) => (p._id === id ? { ...p, ...updated } : p)),
@@ -153,7 +154,7 @@ export default function ProfilePage() {
     setLikingId(postId);
 
     try {
-      const res = await Post.toggleLike(postId); 
+      const res = await Post.toggleLike(postId);
 
       setPosts((prev) =>
         prev.map((p) =>
@@ -258,14 +259,16 @@ export default function ProfilePage() {
                 const owner = p.user ?? p.userId;
                 const authorName =
                   typeof owner === "object"
-                    ? (
-                        `${owner?.first_name ?? owner?.name ?? ""} ${
-                          owner?.last_name ?? owner?.surname ?? ""
-                        }`.trim() || `${firstName} ${lastName}`.trim()
-                      )
+                    ? `${owner?.first_name ?? owner?.name ?? ""} ${
+                        owner?.last_name ?? owner?.surname ?? ""
+                      }`.trim() || `${firstName} ${lastName}`.trim()
                     : `${firstName} ${lastName}`.trim();
 
-                const imageSrc = p.imageUrl ? `${BACKEND_URL}${p.imageUrl}` : "";
+                const imageSrc = p.imageUrl
+                  ? p.imageUrl.startsWith("http")
+                    ? p.imageUrl
+                    : `${BACKEND_URL}${p.imageUrl}`
+                  : null;
 
                 return (
                   <div key={p._id} className="card shadow-sm">
