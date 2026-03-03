@@ -12,14 +12,16 @@ It follows a RESTful architecture with a clear separation between frontend and b
 ## 🛠 Tech Stack
 
 ### 🔹 Frontend
+
 - React (Functional Components)
 - React Hooks (useState, useEffect)
 - Context API (Authentication state)
-- Axios (API communication)
+- Axios (API communication),
 - Pagination Component
 - Conditional Rendering
 
 ### 🔹 Backend
+
 - Node.js
 - Express.js
 - MongoDB
@@ -64,12 +66,11 @@ The application uses **MongoDB** with the following collections:
 - JWT authentication
 - Create post (text + image)
 - Image upload with Multer
-- Cloud image storage via ImageKit
+- Cloud image storage in ImageKit
 - Like / Unlike system
 - Real-time like counter
 - Pagination in feed
 - Edit post (owner only)
-- Soft delete post (owner only)
 - User profile page
 
 ---
@@ -77,11 +78,13 @@ The application uses **MongoDB** with the following collections:
 ## 📡 Main API Endpoints
 
 ### Auth Routes
+
 - `POST /auth/register`
 - `POST /auth/login`
 - `GET /auth/me`
 
 ### Post Routes
+
 - `GET /posts` (supports pagination)
 - `POST /posts`
 - `PATCH /posts/:id`
@@ -93,6 +96,7 @@ The application uses **MongoDB** with the following collections:
 ## 📂 Project Structure
 
 ### Backend
+
 ```
 backend/
  ├── controllers/
@@ -103,6 +107,7 @@ backend/
 ```
 
 ### Frontend
+
 ```
 frontend/
  ├── pages/
