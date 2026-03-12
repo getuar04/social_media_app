@@ -41,7 +41,7 @@ const users = [
     username: "dion",
     email: "dion@test.com",
   }, // 2 posts
-  { name: "Sara", surname: "Aliu", username: "sara", email: "sara@test.com" }, // 2 posts
+  { name: "Sara", surname: "Aliu", username: "sara", email: "/." }, // 2 posts
   { name: "Noel", surname: "Rama", username: "noel", email: "noel@test.com" }, // 2 posts
   { name: "Vesa", surname: "Zeka", username: "vesa", email: "vesa@test.com" }, // 1 post
 ];

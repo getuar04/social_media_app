@@ -22,8 +22,8 @@ LoginRouter.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Email and password are required" });
   }
 
-  const userExists = await UserModel.findOne({ email });
-  console.log("🚀 ~ LoginRouter ~ userExists:", userExists);
+  const normalizedEmail = email.toLowerCase().trim();
+  const userExists = await UserModel.findOne({ email: normalizedEmail });
 
   if (!userExists) {
     return res.status(401).json({ message: "Wrong credentials" });
@@ -33,13 +33,12 @@ LoginRouter.post("/login", async (req, res) => {
     password,
     userExists.passwordHash,
   );
+
   if (!isPasswordValid) {
     return res.status(401).json({ message: "Wrong credentials" });
   }
 
-
   const token = generateToken({ id: userExists._id, email: userExists.email });
-  console.log("🚀 ~ LoginRouter ~ token:", token);
 
   return res.status(200).json({
     message: "Login successful",

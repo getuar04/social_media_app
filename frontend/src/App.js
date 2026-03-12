@@ -4,11 +4,10 @@ import { useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
-// auth
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
+import ResetPassword from "./pages/ResetPassword";
 
-// private
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/HomePage";
 
@@ -26,6 +25,7 @@ export default function App() {
 
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>

@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 dotenv.config();
 
@@ -29,4 +30,6 @@ export const verifyToken = (token) => {
   }
 };
 
-//export default { generateToken, verifyToken };
+export const generatePasswordResetToken = () => {
+  return crypto.randomBytes(32).toString("hex");
+};

@@ -65,6 +65,15 @@ export default function LoginPage() {
                     />
                   </div>
 
+                  <div className="text-end">
+                    <Link
+                      to="/reset-password"
+                      className="small text-decoration-none"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+
                   <button className="btn btn-dark" disabled={loading}>
                     {loading ? "Logging in..." : "Login"}
                   </button>
