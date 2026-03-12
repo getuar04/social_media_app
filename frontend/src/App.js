@@ -7,6 +7,7 @@ import Layout from "./components/Layout";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import ResetPassword from "./pages/ResetPassword";
+import Verify2FAPage from "./pages/Verify2FAPage";
 
 import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/HomePage";
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-2fa" element={<Verify2FAPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>

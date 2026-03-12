@@ -9,6 +9,7 @@ import { LoginRouter } from "./routes/Login.route.js";
 import { RegisterRouter } from "./routes/Register.route.js";
 import PostRouter from "./routes/Post.route.js";
 import { PasswordRouter } from "./routes/Password.route.js";
+import { TwoFactorRouter } from "./routes/TwoFactor.route.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -45,6 +46,9 @@ app.use("/auth", LoginRouter); // POST /auth/login, GET /auth/me
 app.use("/posts", PostRouter); // posts CRUD
 app.use("/uploads", express.static("uploads"));
 app.use("/password", PasswordRouter); // POST /password/forgot-password
+
+app.use("/auth", TwoFactorRouter);
+
 
 app.listen(PORT, () => {
   console.log(`🫡  Server running on http://localhost:${PORT}`);

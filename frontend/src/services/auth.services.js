@@ -10,6 +10,11 @@ export const login = async ({ email, password }) => {
   return data;
 };
 
+export const verify2FA = async ({ email, code }) => {
+  const { data } = await api.post("/auth/verify-2fa", { email, code });
+  return data;
+};
+
 export const me = async () => {
   const { data } = await api.get("/auth/me");
   return data;

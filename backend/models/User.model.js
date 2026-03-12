@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    twoFactorEnabled: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,

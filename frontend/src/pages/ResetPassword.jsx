@@ -72,72 +72,83 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="container py-5">
-      <div className="row justify-content-center">
-        <div className="col-md-6">
-          <div className="card shadow-sm">
-            <div className="card-body p-4">
-              <h3 className="mb-3">
-                {token ? "Reset Password" : "Forgot Password"}
-              </h3>
+    <div
+      className="min-vh-100 d-flex align-items-center justify-content-center"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(13,110,253,0.12), rgba(255,193,7,0.12))",
+      }}
+    >
+      <div className="container">
+        <div className="row justify-content-center">
+          <div className="col-11 col-sm-8 col-md-5 col-lg-4">
+            <div className="card shadow-sm">
+              <div className="card-body p-4">
+                <h3 className="mb-3">
+                  {token ? "Reset Password" : "Forgot Password"}
+                </h3>
 
-              {err && <div className="alert alert-danger">{err}</div>}
-              {msg && <div className="alert alert-success">{msg}</div>}
+                {err && <div className="alert alert-danger">{err}</div>}
+                {msg && <div className="alert alert-success">{msg}</div>}
 
-              {!token ? (
-                <form onSubmit={handleForgotPassword} className="d-grid gap-3">
-                  <div>
-                    <label className="form-label">Email</label>
-                    <input
-                      className="form-control"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your email"
-                    />
-                  </div>
+                {!token ? (
+                  <form
+                    onSubmit={handleForgotPassword}
+                    className="d-grid gap-3"
+                  >
+                    <div>
+                      <label className="form-label">Email</label>
+                      <input
+                        className="form-control"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                      />
+                    </div>
 
-                  <button className="btn btn-dark" disabled={loading}>
-                    {loading ? "Sending..." : "Send Reset Link"}
-                  </button>
+                    <button className="btn btn-dark" disabled={loading}>
+                      {loading ? "Sending..." : "Send Reset Link"}
+                    </button>
 
-                  <div className="small">
-                    Back to <Link to="/login">Login</Link>
-                  </div>
-                </form>
-              ) : (
-                <form onSubmit={handleResetPassword} className="d-grid gap-3">
-                  <div>
-                    <label className="form-label">New Password</label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter new password"
-                    />
-                  </div>
+                    <div className="text-muted small">
+                      Remember your password? <Link to="/login">Login</Link>
+                    </div>
+                  </form>
+                ) : (
+                  <form onSubmit={handleResetPassword} className="d-grid gap-3">
+                    <div>
+                      <label className="form-label">New Password</label>
+                      <input
+                        className="form-control"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </div>
 
-                  <div>
-                    <label className="form-label">Confirm Password</label>
-                    <input
-                      className="form-control"
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm new password"
-                    />
-                  </div>
+                    <div>
+                      <label className="form-label">Confirm Password</label>
+                      <input
+                        className="form-control"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        autoComplete="new-password"
+                      />
+                    </div>
 
-                  <button className="btn btn-dark" disabled={loading}>
-                    {loading ? "Resetting..." : "Reset Password"}
-                  </button>
+                    <button className="btn btn-dark" disabled={loading}>
+                      {loading ? "Resetting..." : "Reset Password"}
+                    </button>
 
-                  <div className="small">
-                    Back to <Link to="/login">Login</Link>
-                  </div>
-                </form>
-              )}
+                    <div className="text-muted small">
+                      Back to <Link to="/login">Login</Link>
+                    </div>
+                  </form>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -10,10 +10,7 @@ export const AuthProvider = ({ children }) => {
   const loadMe = async () => {
     try {
       const res = await Auth.me();
-
-      // disa backends kthejnë { user: {...} }, disa kthejnë direkt {...}
       const u = res?.user ?? res;
-
       setUser(u);
     } catch (err) {
       setUser(null);
@@ -31,8 +28,20 @@ export const AuthProvider = ({ children }) => {
 
   const doLogin = async (email, password) => {
     const res = await Auth.login({ email, password });
+
+    if (res?.twoFactorRequired) {
+      return res;
+    }
+
     localStorage.setItem("token", res.token);
-    await loadMe(); // gjithmonë user nga /me
+    await loadMe();
+    return res;
+  };
+
+  const doVerify2FA = async (email, code) => {
+    const res = await Auth.verify2FA({ email, code });
+    localStorage.setItem("token", res.token);
+    await loadMe();
     return res;
   };
 
@@ -47,7 +56,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, doLogin, doRegister, doLogout, loadMe }}
+      value={{
+        user,
+        loading,
+        doLogin,
+        doVerify2FA,
+        doRegister,
+        doLogout,
+        loadMe,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -16,7 +16,6 @@ PasswordRouter.post("/forgot-password", async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-
     const userExists = await UserModel.findOne({ email: normalizedEmail });
 
     if (!userExists) {
@@ -27,14 +26,13 @@ PasswordRouter.post("/forgot-password", async (req, res) => {
 
     const resetPasswordToken = generatePasswordResetToken();
 
-    const tokenEntry = new TokenModel({
+    await TokenModel.create({
       userId: userExists._id,
       token: resetPasswordToken,
     });
 
-    await tokenEntry.save();
-
-    const frontendUrl = process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN;
+    const frontendUrl =
+      process.env.FRONTEND_URL || process.env.FRONTEND_ORIGIN;
 
     const resetLink = `${frontendUrl}/reset-password?token=${resetPasswordToken}`;
 
@@ -45,20 +43,23 @@ PasswordRouter.post("/forgot-password", async (req, res) => {
       variables: { resetLink },
     });
 
-    return res
-      .status(200)
-      .json({ message: "Password reset link sent successfully" });
+    return res.status(200).json({
+      message: "Password reset link sent successfully",
+    });
   } catch (error) {
-    console.error("Error in forgot password:", error);
-    return res
-      .status(500)
-      .json({ message: "Failed to send reset password email" });
+    console.error("FORGOT PASSWORD ERROR:", error);
+    return res.status(500).json({
+      message: "Failed to send reset password email",
+      error: error.message,
+    });
   }
 });
 
 PasswordRouter.post("/reset-password", async (req, res) => {
   try {
     const { token, password, confirmPassword } = req.body || {};
+
+    console.log("BODY:", req.body);
 
     if (!token || !password || !confirmPassword) {
       return res.status(400).json({
@@ -71,12 +72,14 @@ PasswordRouter.post("/reset-password", async (req, res) => {
     }
 
     const tokenEntry = await TokenModel.findOne({ token });
+    console.log("TOKEN ENTRY:", tokenEntry);
 
     if (!tokenEntry) {
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     const user = await UserModel.findById(tokenEntry.userId);
+    console.log("FOUND USER:", user?.email);
 
     if (!user) {
       await TokenModel.deleteOne({ _id: tokenEntry._id });
@@ -84,6 +87,7 @@ PasswordRouter.post("/reset-password", async (req, res) => {
     }
 
     const newHashedPassword = await hashPassword(password);
+    console.log("NEW HASH:", newHashedPassword);
 
     user.passwordHash = newHashedPassword;
     await user.save();
@@ -94,7 +98,12 @@ PasswordRouter.post("/reset-password", async (req, res) => {
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Error in reset password:", error);
-    return res.status(500).json({ message: "Failed to reset password" });
+    console.error("RESET PASSWORD ERROR:", error);
+    return res.status(500).json({
+      message: "Failed to reset password",
+      error: error.message,
+    });
   }
 });
+
+// http://undefined/reset-password?token=ac09dbb541c9b606e3a255a1d0c44835ec95a0329b2c478e8b4609d5f7c61bd7

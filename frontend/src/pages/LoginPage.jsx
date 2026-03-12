@@ -17,7 +17,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await doLogin(email, password);
+      const res = await doLogin(email, password);
+
+      if (res?.twoFactorRequired) {
+        navigate("/verify-2fa", {
+          state: { email: res.email || email.toLowerCase().trim() },
+        });
+        return;
+      }
+
       navigate("/profile");
     } catch (error) {
       setErr(error?.response?.data?.message || "Login failed");
@@ -66,10 +74,7 @@ export default function LoginPage() {
                   </div>
 
                   <div className="text-end">
-                    <Link
-                      to="/reset-password"
-                      className="small text-decoration-none"
-                    >
+                    <Link to="/reset-password" className="small text-decoration-none">
                       Forgot password?
                     </Link>
                   </div>

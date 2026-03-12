@@ -6,9 +6,12 @@ export const RegisterRouter = Router();
 
 RegisterRouter.post("/", async (req, res) => {
   // Handle user registration
-  const { name, surname, username, email, birthday, password } = req.body;
+  const { name, surname, username, email, birthday, password } = req.body || {};
 
-  console.log("🚀 ~ RegisterRouter ~ email:", email);
+  const normalizedEmail = String(email || "").toLowerCase().trim();
+  const normalizedUsername = String(username || "").toLowerCase().trim();
+
+  console.log("🚀 ~ RegisterRouter ~ email:", normalizedEmail);
 
   // (si te profes: validim i thjeshtë)
   if (!name || !surname || !username || !email || !birthday || !password) {
@@ -17,7 +20,7 @@ RegisterRouter.post("/", async (req, res) => {
 
   // (përshtatur: kontrollon email OSE username)
   const userExists = await UserModel.findOne({
-    $or: [{ email }, { username }],
+    $or: [{ email: normalizedEmail }, { username: normalizedUsername }],
   });
 
   if (userExists) {
@@ -29,10 +32,11 @@ RegisterRouter.post("/", async (req, res) => {
   const newUser = new UserModel({
     name,
     surname,
-    username,
-    email,
+    username: normalizedUsername,
+    email: normalizedEmail,
     birthday,
     passwordHash: hashedPassword,
+    twoFactorEnabled: true,
   });
 
   await newUser.save();
